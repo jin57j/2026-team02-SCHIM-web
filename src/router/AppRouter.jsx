@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router-dom";
 import RequireCategory from "../features/register/guards/RequireCategory.jsx";
 import RequireCreatedCard from "../features/register/guards/RequireCreatedCard.jsx";
 import RequireExportedImage from "../features/register/guards/RequireExportedImage.jsx";
@@ -23,8 +23,7 @@ const EditorPage = lazy(() => import("../pages/register/EditorPage.jsx"));
 
 function AppRouter() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
         <Route index element={<HomePage />} />
         <Route path="/contents" element={<ContentsPage />} />
         <Route
@@ -112,8 +111,7 @@ function AppRouter() {
         )}
 
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    </Routes>
   );
 }
 

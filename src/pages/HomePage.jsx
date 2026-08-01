@@ -100,7 +100,7 @@ export default function Home() {
           {!isCurrentFlipped ? (
             <div className="w-full max-w-[342px] flex justify-end">
               <FloatingButton
-                onClick={() => navigate("/write")}
+                onClick={() => navigate("/register")}
                 label="방명록 작성하기"
               />
             </div>
