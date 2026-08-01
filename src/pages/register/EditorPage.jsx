@@ -4,6 +4,7 @@ import stickerAsset from "../../assets/sticker/star-red.svg";
 import CanvasDock from "../../features/register/editor/CanvasDock.jsx";
 import CanvasStage from "../../features/register/editor/CanvasStage.jsx";
 import CanvasTextInput from "../../features/register/editor/CanvasTextInput.jsx";
+import EditorHeader from "../../features/register/editor/EditorHeader.jsx";
 import {
   BACKGROUND_PALETTE,
   EXPORT_PIXEL_RATIO,
@@ -25,8 +26,14 @@ function EditorPage() {
   const stageRef = useRef(null);
   const fileInputRef = useRef(null);
   const drawingLineIdRef = useRef(null);
+  const drawingStartDocumentRef = useRef(null);
   const documentRef = useRef(draft.canvasDocument);
+  const historyRef = useRef({ past: [], future: [] });
   const [canvasDocument, setCanvasDocument] = useState(draft.canvasDocument);
+  const [historyAvailability, setHistoryAvailability] = useState({
+    canUndo: false,
+    canRedo: false,
+  });
   const [activeTool, setActiveTool] = useState("draw");
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [drawColor, setDrawColor] = useState("#211f1a");
@@ -34,11 +41,42 @@ function EditorPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const syncHistoryAvailability = () => {
+    setHistoryAvailability({
+      canUndo: historyRef.current.past.length > 0,
+      canRedo: historyRef.current.future.length > 0,
+    });
+  };
+
+  const pushHistory = (document) => {
+    const history = historyRef.current;
+    history.past = [...history.past, document].slice(-50);
+    history.future = [];
+    syncHistoryAvailability();
+  };
+
+  const applyDocument = (document) => {
+    documentRef.current = document;
+    setCanvasDocument(document);
+    dispatch({ type: "SET_CANVAS_DOCUMENT", payload: document });
+    setSelectedElementId(null);
+    setTextInputPosition(null);
+  };
+
   const setDocument = (updater, persist = true) => {
+    const currentDocument = documentRef.current;
     const nextDocument =
       typeof updater === "function"
-        ? updater(documentRef.current)
+        ? updater(currentDocument)
         : updater;
+
+    if (nextDocument === currentDocument) {
+      return;
+    }
+
+    if (persist) {
+      pushHistory(currentDocument);
+    }
 
     documentRef.current = nextDocument;
     setCanvasDocument(nextDocument);
@@ -46,6 +84,32 @@ function EditorPage() {
     if (persist) {
       dispatch({ type: "SET_CANVAS_DOCUMENT", payload: nextDocument });
     }
+  };
+
+  const handleUndo = () => {
+    const history = historyRef.current;
+    const previousDocument = history.past.pop();
+
+    if (!previousDocument) {
+      return;
+    }
+
+    history.future.push(documentRef.current);
+    applyDocument(previousDocument);
+    syncHistoryAvailability();
+  };
+
+  const handleRedo = () => {
+    const history = historyRef.current;
+    const nextDocument = history.future.pop();
+
+    if (!nextDocument) {
+      return;
+    }
+
+    history.past.push(documentRef.current);
+    applyDocument(nextDocument);
+    syncHistoryAvailability();
   };
 
   const handleToolSelect = (tool) => {
@@ -89,7 +153,7 @@ function EditorPage() {
     }
   };
 
-  const handleAddText = (text, position, color) => {
+  const handleAddText = (text, position) => {
     const textCount = canvasDocument.elements.filter(
       (element) => element.type === "text",
     ).length;
@@ -101,7 +165,7 @@ function EditorPage() {
       y: Math.min(position.y, 520),
       width: Math.max(50, 328 - position.x),
       height: 68,
-      color,
+      color: "#000000",
       fontSize: 15,
       rotation: textCount % 2 === 0 ? -2 : 0,
       scaleX: 1,
@@ -185,43 +249,6 @@ function EditorPage() {
     }));
   };
 
-  const handleLayerOrder = (direction) => {
-    if (!selectedElementId) {
-      return;
-    }
-
-    setDocument((currentDocument) => {
-      const orderedElements = [...currentDocument.elements].sort(
-        (first, second) =>
-          (first.zIndex ?? 0) - (second.zIndex ?? 0),
-      );
-      const currentIndex = orderedElements.findIndex(
-        (element) => element.id === selectedElementId,
-      );
-      const nextIndex = Math.min(
-        Math.max(currentIndex + direction, 0),
-        orderedElements.length - 1,
-      );
-
-      if (currentIndex < 0 || currentIndex === nextIndex) {
-        return currentDocument;
-      }
-
-      [orderedElements[currentIndex], orderedElements[nextIndex]] = [
-        orderedElements[nextIndex],
-        orderedElements[currentIndex],
-      ];
-
-      return {
-        ...currentDocument,
-        elements: orderedElements.map((element, index) => ({
-          ...element,
-          zIndex: index,
-        })),
-      };
-    });
-  };
-
   const handleDelete = () => {
     if (!selectedElementId) {
       return;
@@ -252,16 +279,22 @@ function EditorPage() {
       }
 
       event.preventDefault();
+      const currentDocument = documentRef.current;
       const nextDocument = {
-        ...documentRef.current,
-        elements: documentRef.current.elements.filter(
+        ...currentDocument,
+        elements: currentDocument.elements.filter(
           (element) => element.id !== selectedElementId,
         ),
       };
 
+      const history = historyRef.current;
+      history.past = [...history.past, currentDocument].slice(-50);
+      history.future = [];
+
       documentRef.current = nextDocument;
       setCanvasDocument(nextDocument);
       dispatch({ type: "SET_CANVAS_DOCUMENT", payload: nextDocument });
+      setHistoryAvailability({ canUndo: true, canRedo: false });
       setSelectedElementId(null);
     };
 
@@ -275,6 +308,7 @@ function EditorPage() {
     }
 
     const lineId = createElementId("line");
+    drawingStartDocumentRef.current = documentRef.current;
     drawingLineIdRef.current = lineId;
     setDocument(
       (currentDocument) => ({
@@ -328,6 +362,12 @@ function EditorPage() {
     }
 
     drawingLineIdRef.current = null;
+
+    if (drawingStartDocumentRef.current) {
+      pushHistory(drawingStartDocumentRef.current);
+      drawingStartDocumentRef.current = null;
+    }
+
     dispatch({
       type: "SET_CANVAS_DOCUMENT",
       payload: documentRef.current,
@@ -393,68 +433,17 @@ function EditorPage() {
 
   return (
     <section className="bg-paper-base text-ink-base flex min-h-dvh flex-col px-6 pt-[max(32px,env(safe-area-inset-top))] ">
-      <header className="flex h-[38px] items-center gap-4">
-        <button
-          type="button"
-          aria-label="콘텐츠 선택으로 돌아가기"
-          onClick={() => navigate("/register/content", { replace: true })}
-          className="text-xl"
-        >
-          ←
-        </button>
-        <button
-          type="button"
-          aria-label="실행 취소"
-          disabled
-          className="text-ink-soft text-lg"
-        >
-          ↺
-        </button>
-        <button
-          type="button"
-          aria-label="다시 실행"
-          disabled
-          className="text-paper-tape text-lg"
-        >
-          ↻
-        </button>
-
-        <span className="flex-1" />
-
-        {selectedElementId && (
-          <div className="flex items-center">
-            <button
-              type="button"
-              onClick={() => handleLayerOrder(-1)}
-              className="body-13-r text-ink-soft px-1.5 py-2"
-            >
-              뒤로
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLayerOrder(1)}
-              className="body-13-r text-ink-soft px-1.5 py-2"
-            >
-              앞으로
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              className="body-13-sb text-ink-soft px-1.5 py-2"
-            >
-              삭제
-            </button>
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={isExporting}
-          className="bg-bg-base text-paper-base body-13-sb rounded-full px-4 py-2.5 disabled:opacity-50"
-        >
-          {isExporting ? "저장 중" : "다음"}
-        </button>
-      </header>
+      <EditorHeader
+        canUndo={historyAvailability.canUndo}
+        canRedo={historyAvailability.canRedo}
+        hasSelection={Boolean(selectedElementId)}
+        isExporting={isExporting}
+        onBack={() => navigate("/register/content", { replace: true })}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onDelete={handleDelete}
+        onNext={handleExport}
+      />
 
       <div className="relative mx-auto mt-[17px] w-full max-w-[342px]">
         <CanvasStage
@@ -473,7 +462,6 @@ function EditorPage() {
         {textInputPosition && (
           <CanvasTextInput
             position={textInputPosition}
-            color={drawColor}
             onComplete={handleAddText}
             onCancel={() => setTextInputPosition(null)}
           />

@@ -97,7 +97,19 @@ function PreviewPage() {
     );
   };
 
-  const handleLeaveComplete = () => {
+  const handleExploreGuestbooks = () => {
+    const contentId = draft.selectedContent?.id;
+    dispatch({ type: "RESET" });
+
+    navigate(
+      contentId
+        ? `/contents?deckId=${encodeURIComponent(contentId)}`
+        : "/contents",
+      { replace: true },
+    );
+  };
+
+  const handleReturnHome = () => {
     dispatch({ type: "RESET" });
     navigate("/", { replace: true });
   };
@@ -172,8 +184,8 @@ function PreviewPage() {
             <RegisterCompleteView
               key="complete"
               reducedMotion={reducedMotion}
-              onExplore={handleLeaveComplete}
-              onHome={handleLeaveComplete}
+              onExplore={handleExploreGuestbooks}
+              onHome={handleReturnHome}
             />
           )}
         </AnimatePresence>
