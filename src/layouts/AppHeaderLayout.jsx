@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import AppHeader from "../components/common/header/AppHeader.jsx";
 import MenuOverlay from "../components/common/menu/MenuOverlay.jsx";
 import AppShell from "./AppShell.jsx";

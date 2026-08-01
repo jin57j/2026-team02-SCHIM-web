@@ -10,6 +10,7 @@ import RegisterLayout from "../layouts/RegisterLayout.jsx";
 import ArchivePage from "../pages/ArchivePage.jsx";
 import HeaderShowcasePage from "../pages/HeaderShowcasePage.jsx";
 import HomePage from "../pages/HomePage.jsx";
+import ContentsPage from "../pages/ContentsPage.jsx";
 import OnboardingPage from "../pages/OnboardingPage.jsx";
 import SettingsPage from "../pages/SettingsPage.jsx";
 import CategoryPage from "../pages/register/CategoryPage.jsx";
@@ -24,30 +25,11 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppHeaderLayout contentClassName="relative px-6" />}>
-          <Route index element={<HomePage />} />
-        </Route>
-
+        <Route index element={<HomePage />} />
+        <Route path="/contents" element={<ContentsPage />} />
         <Route
           element={
-            <AppHeaderLayout
-              title="나의 감상카드"
-              contentClassName="px-6"
-            />
-          }
-        >
-          <Route
-            path="/my-cards"
-            element={<ArchivePage type="reflectionCard" />}
-          />
-        </Route>
-
-        <Route
-          element={
-            <AppHeaderLayout
-              title="발견한 콘텐츠"
-              contentClassName="px-6"
-            />
+            <AppHeaderLayout title="발견한 콘텐츠" contentClassName="px-6" />
           }
         >
           <Route
@@ -110,7 +92,10 @@ function AppRouter() {
           </Route>
         </Route>
 
-        <Route path="/onboarding" element={<PlainLayout contentClassName="px-6" />}>
+        <Route
+          path="/onboarding"
+          element={<PlainLayout contentClassName="px-6" />}
+        >
           <Route index element={<OnboardingPage />} />
           <Route path="nickname" element={<OnboardingPage nickname />} />
         </Route>

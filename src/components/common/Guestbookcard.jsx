@@ -23,19 +23,25 @@ export default function GuestbookCard({
   category,
   initialDate,
   onRefresh,
+  onFlip,
+  compact = false,
+  disabled = false,
+  content,
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState(null);
 
   const handleCardTap = async () => {
-    if (isFlipped || isLoading) return;
+    if (disabled || isFlipped || isLoading) return;
 
     setIsLoading(true);
     try {
-      const response = await openGuestbookAPI(id);
+      const response = content ?? (await openGuestbookAPI(id));
       setData(response);
       setIsFlipped(true);
+
+      if (onFlip) onFlip(id);
     } catch (error) {
       if (error.status === 404) {
         alert("사라진 방명록이에요.");
@@ -70,7 +76,11 @@ export default function GuestbookCard({
 
   return (
     // 피그마 스펙: width 320px, height 470px
-    <div className="relative w-[320px] h-[470px] [perspective:1000px] cursor-pointer">
+    <div
+      className={`relative [perspective:1000px] ${disabled ? "cursor-default" : "cursor-pointer"} ${
+        compact ? "w-full aspect-[126/184]" : "w-[320px] h-[470px]"
+      }`}
+    >
       <motion.div
         className="w-full h-full relative [transform-style:preserve-3d]"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
@@ -80,15 +90,15 @@ export default function GuestbookCard({
           stiffness: 200,
           damping: 20,
         }}
-        onClick={handleCardTap}
+        onClick={disabled ? undefined : handleCardTap}
       >
         {/* ==========================================
             FRONT: 블라인드 카드 
             ========================================== */}
-        <div className="absolute inset-0 [backface-visibility:hidden] card-blind w-full h-full rounded-[4.14px] pt-[28px] px-[24px] pb-[20px] flex flex-col items-center gap-[16.57px]">
+        <div className={`absolute inset-0 [backface-visibility:hidden] card-blind w-full h-full rounded-[4.14px] flex flex-col items-center ${compact ? "gap-2 p-2.5" : "gap-[16.57px] pt-[28px] px-[24px] pb-[20px]"}`}>
           <div className="w-full flex-1 border-2 border-dashed border-[#b0a89f]/40 rounded flex items-center justify-center">
             {/* 수정됨: --ink-soft -> --color-ink-soft */}
-            <span className="heading-20-b text-[var(--color-ink-soft)] opacity-60">
+            <span className={`${compact ? "caption-12-r" : "heading-20-b"} text-[var(--color-ink-soft)] opacity-60`}>
               콘텐츠 영역
             </span>
           </div>
@@ -106,17 +116,17 @@ export default function GuestbookCard({
             ========================================== */}
         <div
           // 수정됨: --ink-base -> --color-ink-base
-          className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] w-full h-full rounded-[4.14px] pt-[28px] px-[24px] pb-[20px] flex flex-col items-center gap-[16.57px] text-[var(--color-ink-base)] shadow-xl"
+          className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] w-full h-full rounded-[4.14px] flex flex-col items-center text-[var(--color-ink-base)] shadow-xl ${compact ? "gap-2 p-2.5" : "gap-[16.57px] pt-[28px] px-[24px] pb-[20px]"}`}
           style={{ backgroundColor: categoryBgColor }} // CSS 변수 직접 주입
         >
           {/* 카테고리 뱃지 */}
           {/* 수정됨: --ink-base -> --color-ink-base */}
-          <div className="px-4 py-1 rounded-full border border-[var(--color-ink-base)]/20 flex items-center justify-center shrink-0">
-            <span className="caption-12-sb">{categoryLabel}</span>
+          <div className={`${compact ? "px-2 py-0.5" : "px-4 py-1"} rounded-full border border-[var(--color-ink-base)]/20 flex items-center justify-center shrink-0`}>
+            <span className={compact ? "caption-12-r" : "caption-12-sb"}>{categoryLabel}</span>
           </div>
 
           {/* 썸네일 */}
-          <div className="w-[200px] h-[200px] bg-[#d9d9d9] rounded-xl flex items-center justify-center overflow-hidden shadow-inner bg-black/5 shrink-0">
+          <div className={`${compact ? "w-full min-h-0 flex-1 rounded-md" : "w-[200px] h-[200px] rounded-xl shrink-0"} bg-[#d9d9d9] flex items-center justify-center overflow-hidden shadow-inner bg-black/5`}>
             {data?.thumbnail && (
               <img
                 src={data.thumbnail}
@@ -128,12 +138,12 @@ export default function GuestbookCard({
 
           {/* 콘텐츠 정보 */}
           <div className="flex flex-col items-center shrink-0">
-            <h2 className="heading-26-b mb-1 text-center">{data?.title}</h2>
-            <p className="body-15-m opacity-75 text-center">{data?.subtitle}</p>
+            <h2 className={`${compact ? "body-13-sb leading-tight" : "heading-26-b mb-1"} text-center`}>{data?.title}</h2>
+            <p className={`${compact ? "caption-12-r leading-tight" : "body-15-m"} opacity-75 text-center`}>{data?.subtitle}</p>
           </div>
 
           {/* 하단 메타 정보 */}
-          <div className="w-full flex flex-col items-center mt-auto shrink-0">
+          <div className={`${compact ? "hidden" : "w-full flex"} flex-col items-center mt-auto shrink-0`}>
             {/* JSX 조건부 렌더링 문법 오류 수정 (&& 추가) */}
             {category === "MOVIE" && (
               <p className="caption-12-r opacity-60 mb-1">
