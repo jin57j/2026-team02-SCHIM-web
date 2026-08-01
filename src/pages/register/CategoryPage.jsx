@@ -116,6 +116,7 @@ function CategoryPage() {
         <Button onClick={handleNext}>다음</Button>
       </div>
     </section>
+    </section>
   );
 }
 
