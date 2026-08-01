@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import onboardingOne from "../assets/Onboarding 1.svg";
 import onboardingTwo from "../assets/Onboarding 2.svg";
+import profileImg from "../assets/Profile.svg";
 import Button from "../components/common/Button.jsx";
 import AppShell from "../layouts/AppShell.jsx";
 
@@ -27,7 +28,10 @@ const nicknames = [
 
 function Dots({ current, total = 3 }) {
   return (
-    <div className="flex items-center justify-center gap-2" aria-label={`${current + 1} / ${total}`}>
+    <div
+      className="flex items-center justify-center gap-2"
+      aria-label={`${current + 1} / ${total}`}
+    >
       {Array.from({ length: total }, (_, index) => (
         <span
           key={index}
@@ -60,13 +64,20 @@ export default function OnboardingPage() {
         <div className="flex flex-1 flex-col items-center justify-center">
           {isNicknameStep ? (
             <section className="flex w-full flex-col items-center text-center">
-              <div className="relative mb-4 grid size-[60px] place-items-center overflow-hidden rounded-full bg-[conic-gradient(var(--color-key-place-500)_0_34%,var(--color-paper-base)_34%_50%,var(--color-key-place-700)_50%_100%)]">
-                <span className="absolute right-1 top-1 text-lg leading-none text-[var(--color-key-book-500)]">★</span>
-              </div>
+              {/* CSS 그라데이션 대신 실제 프로필 에셋 사용 */}
+              <img
+                src={profileImg}
+                alt="프로필"
+                className="mb-4 size-[60px] object-cover"
+              />
               <p className="body-15-sb">{nicknames[nicknameIndex]}</p>
               <button
                 type="button"
-                onClick={() => setNicknameIndex((current) => (current + 1) % nicknames.length)}
+                onClick={() =>
+                  setNicknameIndex(
+                    (current) => (current + 1) % nicknames.length,
+                  )
+                }
                 className="body-13-r mt-4 rounded-[6px] bg-[var(--color-bg-elev-warm)] px-4 py-2 text-[var(--color-text-cream)]"
               >
                 다시 뽑기
@@ -74,21 +85,33 @@ export default function OnboardingPage() {
             </section>
           ) : (
             <div className="relative max-h-[50dvh] w-full max-w-[262px] overflow-hidden">
-              <img src={slide.image} alt="온보딩 안내" className="max-h-[50dvh] w-full object-contain" />
+              <img
+                src={slide.image}
+                alt="온보딩 안내"
+                className="max-h-[50dvh] w-full object-contain"
+              />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[var(--color-bg-base)] via-[color-mix(in_srgb,var(--color-bg-base)_85%,transparent)] to-transparent backdrop-blur-[2px]" />
             </div>
           )}
         </div>
 
         <section className="flex shrink-0 flex-col items-center text-center">
-          <h1 className="heading-24-b">{isNicknameStep ? "당신의 이름은 비밀이에요" : slide.title}</h1>
+          <h1 className="heading-24-b">
+            {isNicknameStep ? "당신의 이름은 비밀이에요" : slide.title}
+          </h1>
           <p className="body-15-r mt-3 text-[var(--color-text-muted-grey)]">
-            {isNicknameStep ? "별명이 마음에 들 때까지 뽑아보세요" : slide.description}
+            {isNicknameStep
+              ? "별명이 마음에 들 때까지 뽑아보세요"
+              : slide.description}
           </p>
           <div className="my-7">
             <Dots current={step} />
           </div>
-          <Button variant={isNicknameStep ? "primary-light" : "primary-dark"} size="full" onClick={handleNext}>
+          <Button
+            variant={isNicknameStep ? "primary-light" : "primary-dark"}
+            size="full"
+            onClick={handleNext}
+          >
             {isNicknameStep ? "시작하기" : "다음"}
           </Button>
         </section>
