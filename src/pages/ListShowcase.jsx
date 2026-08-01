@@ -1,14 +1,14 @@
 import { useState } from "react";
 // 경로가 상위 폴더(..)의 components로 변경되었습니다.
-import GuestbookCard from "../components/Guestbookcard";
-import Button from "../components/Button";
+import GuestbookCard from "../components/common/Guestbookcard";
+import Button from "../components/common/Button";
 import PlaceCategoryButton, {
   MusicCategoryButton,
   BookCategoryButton,
   MovieCategoryButton,
   PerformanceCategoryButton,
   EtcCategoryButton,
-} from "../components/List";
+} from "../components/common/List";
 
 export default function ListShowcase() {
   // 어떤 카테고리가 선택되었는지 관리하는 상태 (초기값은 null 또는 'PLACE' 등 자유롭게 설정)

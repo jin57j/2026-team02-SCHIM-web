@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 
 // 오버레이 안에서 주요 화면으로 이동하는 메뉴 목록입니다.
 function MenuList({

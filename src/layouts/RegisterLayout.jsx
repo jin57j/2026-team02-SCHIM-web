@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router-dom";
 import RegisterHeader from "../components/common/header/RegisterHeader.jsx";
 import AppShell from "./AppShell.jsx";
 
