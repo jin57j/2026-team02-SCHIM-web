@@ -14,7 +14,7 @@ function RegisterLayout({
   return (
     <AppShell>
       <div
-        className={`flex min-h-dvh flex-col px-6 pt-[max(12px,env(safe-area-inset-top))] pb-[max(24px,env(safe-area-inset-bottom))] ${className}`}
+        className={`flex min-h-dvh flex-col px-6 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] ${className}`}
       >
         <RegisterHeader
           currentStep={currentStep}
