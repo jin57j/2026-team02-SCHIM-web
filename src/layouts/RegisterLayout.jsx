@@ -20,7 +20,7 @@ function RegisterLayout({
           currentStep={currentStep}
           totalStep={totalStep}
           onBack={() => navigate(-1)}
-          onClose={() => navigate("/")}
+          onClose={() => navigate("/home")}
         />
 
         <main className={`mt-[22px] min-h-0 flex-1 ${contentClassName}`}>
