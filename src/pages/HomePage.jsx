@@ -7,7 +7,7 @@ import "swiper/css";
 import AppHeaderLayout from "../layouts/AppHeaderLayout";
 import GuestbookCard from "../components/common/Guestbookcard";
 import FloatingButton from "../components/common/button/FloatingButton";
-import Button from "../components/common/button";
+import Button from "../components/common/Button";
 import starIconSrc from "../assets/icon/star.svg";
 import heartIconSrc from "../assets/icon/favorite.svg";
 import { contentDecks } from "../mocks/contentDecks.js";
