@@ -1,11 +1,7 @@
-import ListShowcase from "./pages/ListShowcase";
+import AppRouter from "./router/AppRouter.jsx";
 
 function App() {
-  return (
-    <>
-      <ListShowcase />
-    </>
-  );
+  return <AppRouter />;
 }
 
 export default App;
